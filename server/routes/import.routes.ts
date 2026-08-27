@@ -2,25 +2,26 @@ import { Router } from "express";
 
 import { upload } from "../middleware/upload.middleware.js";
 import { uploadProjects, uploadSalary, uploadTimesheet } from "../controllers/import.controller.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 const router = Router();
 
 router.post(
   "/timesheet",
   upload.single("file"),
-  uploadTimesheet
+  asyncHandler(uploadTimesheet) 
 );
 
 router.post(
     "/salary",
     upload.single("file"),
-    uploadSalary
+    asyncHandler(uploadSalary)
   );
   
   router.post(
     "/projects",
     upload.single("file"),
-    uploadProjects
+    asyncHandler(uploadProjects)
   );
 
 export default router;
