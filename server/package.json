@@ -10,13 +10,17 @@
   "keywords": [],
   "type": "module",
   "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/multer": "^2.2.0",
     "@types/node": "^26.4.0",
     "tsx": "^4.23.12",
     "typescript": "^7.0.2"
   },
   "dependencies": {
     "dayjs": "^1.11.23",
+    "express": "^5.2.1",
     "mongoose": "^9.9.4",
+    "multer": "^2.2.0",
     "xlsx": "^0.18.5"
   }
 }
