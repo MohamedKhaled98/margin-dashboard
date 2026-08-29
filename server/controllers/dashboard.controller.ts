@@ -1,7 +1,7 @@
 
 
 import type { Request, Response } from "express";
-import { getDashboardStatsData, getProjectsListData } from "../services/dashboard/dashboard.service.js";
+import { getDashboardStatsData } from "../services/dashboard/dashboard.service.js";
 import { BadRequest } from "../utils/api-error.js";
 
 
@@ -23,13 +23,4 @@ export async function getDashboardStats(
     const stats = await getDashboardStatsData(year, month);
 
     return res.json(stats);
-}
-
-export async function getProjectsList(
-    req: Request,
-    res: Response
-) {
-    const list = await getProjectsListData();
-
-    return res.json(list);
 }
