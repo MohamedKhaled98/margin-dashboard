@@ -106,6 +106,25 @@ export type ProductivityStats = {
   employees: EmployeeProductivity[]
 }
 
+// Mirrors app/server/services/category/category.service.ts
+
+export type CategoryHours = {
+  category: string
+  billable: boolean
+  hours: number
+  share: number
+  employeeCount: number
+}
+
+export type CategoryStats = {
+  period: { year: number; month: number | null }
+  totalHours: number
+  billableHours: number
+  nonBillableHours: number
+  billableCategories: string[]
+  categories: CategoryHours[]
+}
+
 export type DashboardStats = {
   period: { year: number; month: number | null }
   totalHours: number

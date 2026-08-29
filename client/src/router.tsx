@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router'
 
 import { AppLayout } from '@/components/layout/app-layout'
+import { CategoriesPage } from '@/features/categories/categories-page'
 import { DashboardPage } from '@/features/dashboard/dashboard-page'
 import { ImportsPage } from '@/features/imports/imports-page'
 import { ProductivityPage } from '@/features/productivity/productivity-page'
@@ -16,6 +17,7 @@ export const router = createBrowserRouter([
       { path: 'projects', element: <Navigate to="/" replace /> },
       { path: 'projects/:refCode', Component: ProjectDetailsPage },
       { path: 'productivity', Component: ProductivityPage },
+      { path: 'categories', Component: CategoriesPage },
       { path: 'imports', Component: ImportsPage },
       { path: 'settings', Component: SettingsPage },
     ],
