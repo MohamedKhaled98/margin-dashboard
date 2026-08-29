@@ -1,17 +1,20 @@
-import  xlsx from "xlsx";
-
 import {
   findHeaderRow,
+  isEmptyRow,
   normalizeEmpty,
+  readFirstSheetRows,
   validateRequiredHeaders,
 } from "./utils/excel.utils.js";
 
+import { BadRequest } from "../utils/api-error.js";
 import { parseMonth } from "./utils/date.utils.js";
 
 export type ParsedProject = {
   refCode: string;
   name: string;
-  price: number;
+  // null when the price cell is empty or "-": the project exists but has no
+  // price yet. Surfaced as a MISSING_PRICE warning downstream, never a crash.
+  price: number | null;
   salesYear: number;
   salesMonth: number;
   category: string;
@@ -21,15 +24,7 @@ export type ParsedProject = {
 export function parseProjects(
   filePath: string
 ): ParsedProject[] {
-  const workbook = xlsx.readFile(filePath);
-
-  const sheetName = workbook.SheetNames[0];
-  const sheet = workbook.Sheets[sheetName!];
-
-  const rows = xlsx.utils.sheet_to_json<unknown[]>(sheet!, {
-    header: 1,
-    defval: null,
-  });
+  const rows = readFirstSheetRows(filePath);
 
   const headerRowIndex = findHeaderRow(rows, [
     "ref code",
@@ -49,7 +44,9 @@ export function parseProjects(
     "Status",
   ]);
 
-  const dataRows = rows.slice(headerRowIndex + 1);
+  const dataRows = rows
+    .slice(headerRowIndex + 1)
+    .filter((row) => !isEmptyRow(row));
 
   const rawObjects = dataRows.map((row) => {
     const result: Record<string, unknown> = {};
@@ -64,18 +61,21 @@ export function parseProjects(
   return rawObjects.map((row) => {
     const refCode = String(row["Ref Code"] ?? "").trim();
     const name = String(row["Project (Billable) Name"] ?? "").trim();
-    const price = Number(row["Project Price"]);
+    const rawPrice = normalizeEmpty(row["Project Price"]);
+    const price = rawPrice === null ? null : Number(rawPrice);
 
     if (!refCode) {
-      throw new Error("Project Ref Code is required");
+      throw new BadRequest("Project Ref Code is required");
     }
 
     if (!name) {
-      throw new Error(`Project (Billable) Name is required for ${refCode}`);
+      throw new BadRequest(`Project (Billable) Name is required for ${refCode}`);
     }
 
-    if (!Number.isFinite(price) || price < 0) {
-      throw new Error(`Invalid project price for ${refCode}`);
+    if (price !== null && (!Number.isFinite(price) || price < 0)) {
+      throw new BadRequest(
+        `Invalid project price for ${refCode}: ${rawPrice}`
+      );
     }
 
     const { year, month } = parseMonth(

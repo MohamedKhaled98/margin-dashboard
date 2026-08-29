@@ -29,7 +29,7 @@ function StatTiles({ details }: { details: ProjectDetails }) {
       value: details.price === null ? '—' : formatAED(details.price),
       hint:
         details.price === null
-          ? 'no price row — revenue counted as zero'
+          ? 'no price found — revenue counted as zero'
           : details.salesYear !== null && details.salesMonth !== null
             ? `sold ${monthName(details.salesMonth)} ${details.salesYear}`
             : undefined,
@@ -160,7 +160,7 @@ export function ProjectDetailsPage() {
               <h2 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                 Data quality
               </h2>
-              <WarningsSection warnings={data.warnings} />
+              <WarningsSection warnings={data.warnings} linkToProject={false} />
             </section>
           )}
         </div>

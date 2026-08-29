@@ -1,5 +1,11 @@
-import xlsx from "xlsx";
-import { findHeaderRow, normalizeEmpty, validateRequiredHeaders } from "./utils/excel.utils.js";
+import {
+    findHeaderRow,
+    isEmptyRow,
+    normalizeEmpty,
+    readFirstSheetRows,
+    validateRequiredHeaders,
+} from "./utils/excel.utils.js";
+import { BadRequest } from "../utils/api-error.js";
 import dayjs from "dayjs";
 import localeData from "dayjs/plugin/localeData.js";
 
@@ -15,15 +21,7 @@ export type ParsedSalary = {
 
 export function parseSalary(filePath: string) {
 
-    const workbook = xlsx.readFile(filePath);
-
-    const sheetName = workbook.SheetNames[0];
-    const sheet = workbook.Sheets[sheetName!];
-
-    const rows = xlsx.utils.sheet_to_json<unknown[]>(sheet!, {
-        header: 1,
-        defval: null,
-    });
+    const rows = readFirstSheetRows(filePath);
 
     const headerRowIndex = findHeaderRow(rows, [
         "employee no.",
@@ -36,10 +34,12 @@ export function parseSalary(filePath: string) {
     validateRequiredHeaders(headers, [
         "Employee No.",
         "Employee Name",
-        ...dayjs.months()
-      ]);
-   
-    const dataRows = rows.slice(headerRowIndex + 1);
+        ...dayjs.months(),
+    ]);
+
+    const dataRows = rows
+        .slice(headerRowIndex + 1)
+        .filter((row) => !isEmptyRow(row));
 
     const rawObjects = dataRows.map((row) => {
         const result: Record<string, unknown> = {};
@@ -70,7 +70,7 @@ export function parseSalary(filePath: string) {
             const amount = Number(value);
 
             if (!Number.isFinite(amount) || amount < 0) {
-                throw new Error(
+                throw new BadRequest(
                   `Invalid salary for ${employeeName} - ${monthName}: ${value}`
                 );
               }

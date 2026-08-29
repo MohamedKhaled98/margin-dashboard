@@ -42,14 +42,18 @@ export async function uploadSalary(
       });
     }
   
-    const salaries = parseSalary(req.file.path);
-  
-    await importSalaries(salaries);
-  
-    return res.json({
-      message: "Salary imported successfully",
-      rows: salaries.length,
-    });
+    try {
+      const salaries = parseSalary(req.file.path);
+
+      await importSalaries(salaries);
+
+      return res.json({
+        message: "Salary imported successfully",
+        rows: salaries.length,
+      });
+    } finally {
+      await fs.unlink(req.file.path).catch(() => {});
+    }
   }
 
   export async function uploadProjects(
@@ -62,12 +66,16 @@ export async function uploadSalary(
       });
     }
   
-    const projects = parseProjects(req.file.path);
-  
-    await importProjects(projects);
-  
-    return res.json({
-      message: "Projects imported successfully",
-      rows: projects.length,
-    });
+    try {
+      const projects = parseProjects(req.file.path);
+
+      await importProjects(projects);
+
+      return res.json({
+        message: "Projects imported successfully",
+        rows: projects.length,
+      });
+    } finally {
+      await fs.unlink(req.file.path).catch(() => {});
+    }
   }

@@ -28,10 +28,13 @@ export type ProjectSummary = {
   category: string
   status: string | null
   hours: number
-  revenue: number
+  // revenue/profit are null when the project has no price (no row in the
+  // prices sheet, or a row with an empty price cell).
+  revenue: number | null
   cost: number
-  profit: number
+  profit: number | null
   margin: number | null
+  missingPrice: boolean
 }
 
 // Mirrors app/server/services/project/

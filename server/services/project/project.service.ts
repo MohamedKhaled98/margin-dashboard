@@ -8,10 +8,13 @@ export type ProjectSummary = {
   category: string;
   status: string | null;
   hours: number;
-  revenue: number;
+  // revenue/profit are null when the project has no price (no row in the
+  // prices sheet, or a row with an empty price cell).
+  revenue: number | null;
   cost: number;
-  profit: number;
+  profit: number | null;
   margin: number | null;
+  missingPrice: boolean;
 };
 
 // Each project's full picture across every month it has hours in.
@@ -83,26 +86,71 @@ export async function getProjectsListData(): Promise<ProjectSummary[]> {
     usageByRefCode.set(group._id.refCode, totals);
   }
 
-  return projects
-    .map((project) => {
-      const totals = usageByRefCode.get(project.refCode) ?? {
-        hours: 0,
-        cost: 0,
-      };
+  const summaries: ProjectSummary[] = projects.map((project) => {
+    const totals = usageByRefCode.get(project.refCode) ?? {
+      hours: 0,
+      cost: 0,
+    };
 
-      const profit = project.price - totals.cost;
+    const price = project.price ?? null;
+    const profit = price !== null ? price - totals.cost : null;
 
-      return {
-        refCode: project.refCode,
-        name: project.name,
-        category: project.category,
-        status: project.status ?? null,
-        hours: totals.hours,
-        revenue: project.price,
-        cost: totals.cost,
-        profit,
-        margin: project.price > 0 ? profit / project.price : null,
-      };
-    })
-    .sort((a, b) => b.revenue - a.revenue);
+    return {
+      refCode: project.refCode,
+      name: project.name,
+      category: project.category,
+      status: project.status ?? null,
+      hours: totals.hours,
+      revenue: price,
+      cost: totals.cost,
+      profit,
+      margin: price !== null && price > 0 && profit !== null ? profit / price : null,
+      missingPrice: price === null,
+    };
+  });
+
+  // Billable ref codes with logged hours but no row in the prices sheet:
+  // they still cost money, so they belong in the list, flagged.
+  const knownRefCodes = new Set(projects.map((project) => project.refCode));
+
+  const unpricedRefCodes = await TimesheetEntry.aggregate<{
+    _id: string;
+    projectName: string | null;
+    category: string;
+  }>([
+    {
+      $match: {
+        refCode: { $ne: null, $nin: [...knownRefCodes] },
+        category: { $in: assumptions.billableCategories },
+      },
+    },
+    {
+      $group: {
+        _id: "$refCode",
+        projectName: { $first: "$projectName" },
+        category: { $first: "$category" },
+      },
+    },
+  ]);
+
+  for (const group of unpricedRefCodes) {
+    const totals = usageByRefCode.get(group._id) ?? { hours: 0, cost: 0 };
+
+    summaries.push({
+      refCode: group._id,
+      name: group.projectName ?? group._id,
+      category: group.category,
+      status: null,
+      hours: totals.hours,
+      revenue: null,
+      cost: totals.cost,
+      profit: null,
+      margin: null,
+      missingPrice: true,
+    });
+  }
+
+  return summaries.sort(
+    (a, b) => (b.revenue ?? 0) - (a.revenue ?? 0) || b.cost - a.cost
+  );
 }

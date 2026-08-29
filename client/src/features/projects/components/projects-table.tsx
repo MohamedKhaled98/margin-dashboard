@@ -6,7 +6,6 @@ import {
   Card,
   CardAction,
   CardContent,
-  CardDescription,
   CardHeader,
 } from '@/components/ui/card'
 import {
@@ -56,9 +55,9 @@ export function ProjectsTable() {
                   project.name,
                   project.status,
                   project.hours,
-                  project.revenue,
+                  project.revenue ?? '',
                   project.cost,
-                  project.profit,
+                  project.profit ?? '',
                   csvPercent(project.margin),
                 ])
               }
@@ -84,7 +83,8 @@ export function ProjectsTable() {
 
         {data && data.length === 0 && (
           <p className="text-sm text-muted-foreground">
-            No priced projects yet — import the project prices spreadsheet.
+            No projects yet — import the project prices and timesheet
+            spreadsheets.
           </p>
         )}
 
@@ -141,7 +141,23 @@ export function ProjectsTable() {
                     {project.hours > 0 ? formatHours(project.hours) : '—'}
                   </TableCell>
                   <TableCell className='text-right font-mono text-[13px]'>
-                    {formatAED(project.revenue)}
+                    {project.missingPrice || project.revenue === null ? (
+                      <Tooltip>
+                        <TooltipTrigger
+                          render={
+                            <span className="rounded-md border border-amber-500/40 px-1.5 py-0.5 font-sans text-xs font-medium whitespace-nowrap text-amber-400">
+                              No price
+                            </span>
+                          }
+                        />
+                        <TooltipContent side="top" align="end">
+                          No price found in the prices sheet — revenue is
+                          counted as zero
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      formatAED(project.revenue)
+                    )}
                   </TableCell>
                   <TableCell className='text-right font-mono text-[13px]'>
                     {formatAED(project.cost)}
@@ -149,10 +165,12 @@ export function ProjectsTable() {
                   <TableCell
                     className={cn(
                       'text-right font-mono text-[13px] font-medium',
-                      project.profit < 0 && 'text-destructive'
+                      project.profit !== null &&
+                        project.profit < 0 &&
+                        'text-destructive'
                     )}
                   >
-                    {formatAED(project.profit)}
+                    {project.profit === null ? '—' : formatAED(project.profit)}
                   </TableCell>
                   <TableCell
                     className={cn(

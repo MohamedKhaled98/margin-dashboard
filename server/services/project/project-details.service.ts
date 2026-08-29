@@ -243,9 +243,13 @@ export async function getProjectDetailsData(
     project?.name ?? usage.find((group) => group.projectName)?.projectName ?? refCode;
 
   if (!project || project.price === null) {
+    const reason = project
+      ? "its price cell is empty in the prices sheet"
+      : "it has no row in the prices sheet";
+
     warnings.push({
       code: "MISSING_PRICE",
-      message: `${totalHours} hours logged on ${refCode} but it has no price row — revenue is counted as zero and margins cannot be computed`,
+      message: `${Math.round(totalHours * 10) / 10} hours logged on ${refCode} but ${reason} — revenue is counted as zero and margins cannot be computed`,
       refCode,
       projectName,
     });

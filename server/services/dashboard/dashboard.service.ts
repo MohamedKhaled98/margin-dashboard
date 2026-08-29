@@ -7,14 +7,16 @@ import {
   type RateWarning,
 } from "../calc/rate.service.js";
 
+export type MissingPriceWarning = {
+  code: "MISSING_PRICE";
+  message: string;
+  refCode: string;
+  projectName: string | null;
+};
+
 export type DashboardWarning =
   | (RateWarning & { months: number[] })
-  | {
-      code: "MISSING_PRICE";
-      message: string;
-      refCode: string;
-      projectName: string | null;
-    };
+  | MissingPriceWarning;
 
 // Company-wide cost for a month: every billable hour charged at
 // (direct + indirect rate). With clean data this equals salaries + overhead.
@@ -32,7 +34,6 @@ function monthCost(rates: MonthlyRates): number {
 export async function getDashboardStatsData(year: number, month?: number) {
   const assumptions = await getAssumptions();
   const monthlyRates = await getRatesForPeriod(year, month, assumptions);
-  console.log(`Monthly rates for ${year}${month ? `-${month}` : ""}:`, monthlyRates);
   let totalHours = 0;
   let billableHours = 0;
   let cost = 0;
@@ -61,13 +62,32 @@ export async function getDashboardStatsData(year: number, month?: number) {
     ...(month ? { salesMonth: month } : {}),
   }).lean();
 
-  const revenue = projects.reduce((sum, project) => sum + project.price, 0);
+  const revenue = projects.reduce(
+    (sum, project) => sum + (project.price ?? 0),
+    0
+  );
 
   const priceWarnings = await findUnpricedRefCodes(
     year,
     month,
     assumptions.billableCategories
   );
+
+  // Projects sold this period whose price cell was empty in the sheet. The
+  // hours-based scan above misses them because a project row exists.
+  for (const project of projects) {
+    if (project.price !== null) continue;
+    if (priceWarnings.some((warning) => warning.refCode === project.refCode)) {
+      continue;
+    }
+
+    priceWarnings.push({
+      code: "MISSING_PRICE",
+      message: `${project.name} (${project.refCode}) was sold this period but its price is missing — its revenue is counted as zero`,
+      refCode: project.refCode,
+      projectName: project.name,
+    });
+  }
 
   const profit = revenue - cost;
 
@@ -86,12 +106,13 @@ export async function getDashboardStatsData(year: number, month?: number) {
   };
 }
 
-// Billable time logged against a ref code that has no price row.
+// Billable time logged against a ref code that has no price. Covers both a
+// missing row in the prices sheet and a row whose price cell was empty.
 async function findUnpricedRefCodes(
   year: number,
   month: number | undefined,
   billableCategories: string[]
-): Promise<DashboardWarning[]> {
+): Promise<MissingPriceWarning[]> {
   const billableRefCodes = await TimesheetEntry.aggregate<{
     _id: string;
     projectName: string | null;
@@ -114,15 +135,17 @@ async function findUnpricedRefCodes(
     },
   ]);
 
-  const pricedRefCodes = new Set(await Project.distinct("refCode"));
+  const pricedRefCodes = new Set(
+    await Project.distinct("refCode", { price: { $ne: null } })
+  );
 
   return billableRefCodes
     .filter((group) => !pricedRefCodes.has(group._id))
     .map((group) => ({
       code: "MISSING_PRICE" as const,
-      message: `${group.hours} billable hours logged on ${group._id} (${
+      message: `${Math.round(group.hours * 10) / 10} billable hours logged on ${group._id} (${
         group.projectName ?? "unknown project"
-      }) but it has no price row — its revenue is counted as zero`,
+      }) but it has no price — its revenue is counted as zero`,
       refCode: group._id,
       projectName: group.projectName,
     }));

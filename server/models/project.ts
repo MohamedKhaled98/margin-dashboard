@@ -15,9 +15,10 @@ const projectSchema = new Schema(
       trim: true,
     },
 
+    // null when the prices sheet has no value for this project ("-" or blank).
     price: {
       type: Number,
-      required: true,
+      default: null,
       min: 0,
     },
 

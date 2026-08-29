@@ -1,6 +1,8 @@
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat.js";
 
+import { BadRequest } from "../../utils/api-error.js";
+
 dayjs.extend(customParseFormat);
 
 export function parseMonth(
@@ -41,5 +43,5 @@ export function parseMonth(
     }
   }
 
-  throw new Error(`Invalid month: ${value}`);
+  throw new BadRequest(`Invalid month: ${value}`);
 }

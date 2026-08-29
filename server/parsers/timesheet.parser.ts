@@ -1,5 +1,10 @@
-import xlsx from "xlsx";
-import { findHeaderRow, normalizeEmpty, validateRequiredHeaders } from "./utils/excel.utils.js";
+import {
+  findHeaderRow,
+  isEmptyRow,
+  normalizeEmpty,
+  readFirstSheetRows,
+  validateRequiredHeaders,
+} from "./utils/excel.utils.js";
 import { parseMonth } from "./utils/date.utils.js";
 
 export type ParsedTimesheetEntry = {
@@ -19,15 +24,7 @@ export type ParsedTimesheetEntry = {
 };
 
 export function parseTimesheet(filePath: string): ParsedTimesheetEntry[] {
-  const workbook = xlsx.readFile(filePath);
-
-  const sheetName = workbook.SheetNames[0];
-  const sheet = workbook.Sheets[sheetName!];
-
-  const rows = xlsx.utils.sheet_to_json<any[]>(sheet!, {
-    header: 1,
-    defval: null,
-  });
+  const rows = readFirstSheetRows(filePath);
 
   const headerRowIndex = findHeaderRow(rows, [
     "month",
@@ -54,7 +51,9 @@ export function parseTimesheet(filePath: string): ParsedTimesheetEntry[] {
     "Hours",
   ]);
 
-  const dataRows = rows.slice(headerRowIndex + 1);
+  const dataRows = rows
+    .slice(headerRowIndex + 1)
+    .filter((row) => !isEmptyRow(row));
 
   const objects = dataRows.map((row) => {
     const result: Record<string, unknown> = {};
