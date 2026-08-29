@@ -83,6 +83,29 @@ export type ProjectDetails = {
   warnings: DashboardWarning[]
 }
 
+// Mirrors app/server/services/productivity/productivity.service.ts
+
+export type EmployeeProductivity = {
+  employeeNo: string
+  employeeName: string
+  department: string | null
+  designation: string | null
+  totalHours: number
+  billableHours: number
+  nonBillableHours: number
+  productivity: number
+}
+
+export type ProductivityStats = {
+  period: { year: number; month: number | null }
+  totalHours: number
+  billableHours: number
+  nonBillableHours: number
+  productivity: number | null
+  billableCategories: string[]
+  employees: EmployeeProductivity[]
+}
+
 export type DashboardStats = {
   period: { year: number; month: number | null }
   totalHours: number
