@@ -1,6 +1,8 @@
 import type { ProjectMonthBreakdown } from '@/api/types'
+import { ExportCsvButton } from '@/components/export-csv-button'
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -29,6 +31,21 @@ export function MonthlyActivity({
           Cost varies by month because hourly rates are recomputed from each
           month's salaries and hours.
         </CardDescription>
+        {months.length > 0 && (
+          <CardAction>
+            <ExportCsvButton
+              filename="monthly-activity"
+              headers={['Month', 'Hours', 'Cost (AED)']}
+              getRows={() =>
+                months.map((month) => [
+                  `${month.year}-${String(month.month).padStart(2, '0')}`,
+                  month.hours,
+                  month.cost,
+                ])
+              }
+            />
+          </CardAction>
+        )}
       </CardHeader>
       <CardContent>
         {months.length === 0 ? (

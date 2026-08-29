@@ -1,5 +1,7 @@
+import { ExportCsvButton } from '@/components/export-csv-button'
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -12,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { csvPercent } from '@/lib/csv'
 import { formatHours, formatPercent } from '@/lib/format'
 
 import type { EmployeeProductivity } from '@/api/types'
@@ -33,6 +36,35 @@ export function ProductivityTable({
           categories: {billableCategories.join(', ')} — configurable in
           Settings.
         </CardDescription>
+        {employees.length > 0 && (
+          <CardAction>
+            <ExportCsvButton
+              filename="productivity"
+              headers={[
+                'Employee No',
+                'Employee',
+                'Designation',
+                'Department',
+                'Billable Hours',
+                'Non-billable Hours',
+                'Total Hours',
+                'Productivity %',
+              ]}
+              getRows={() =>
+                employees.map((employee) => [
+                  employee.employeeNo,
+                  employee.employeeName,
+                  employee.designation,
+                  employee.department,
+                  employee.billableHours,
+                  employee.nonBillableHours,
+                  employee.totalHours,
+                  csvPercent(employee.productivity),
+                ])
+              }
+            />
+          </CardAction>
+        )}
       </CardHeader>
       <CardContent>
         <Table>

@@ -1,8 +1,10 @@
 import { TriangleAlert } from 'lucide-react'
 
 import type { ProjectDetails } from '@/api/types'
+import { ExportCsvButton } from '@/components/export-csv-button'
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -23,6 +25,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { csvPercent } from '@/lib/csv'
 import { formatAED, formatHours, formatPercent } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
@@ -43,6 +46,51 @@ export function ContributionsTable({ details }: { details: ProjectDetails }) {
           Revenue share is the project price split by each person's share of
           hours; cost is their hours at that month's direct + indirect rate.
         </CardDescription>
+        {employees.length > 0 && (
+          <CardAction>
+            <ExportCsvButton
+              filename={`contributions-${details.refCode}`}
+              headers={[
+                'Employee No',
+                'Employee',
+                'Designation',
+                'Department',
+                'Hours',
+                'Hours Share %',
+                'Cost (AED)',
+                'Revenue Share (AED)',
+                'Profit (AED)',
+                'Margin %',
+              ]}
+              getRows={() => [
+                ...employees.map((employee) => [
+                  employee.employeeNo,
+                  employee.employeeName,
+                  employee.designation,
+                  employee.department,
+                  employee.hours,
+                  csvPercent(employee.hoursShare),
+                  employee.cost,
+                  employee.revenueShare,
+                  employee.profit,
+                  csvPercent(employee.profitability),
+                ]),
+                [
+                  '',
+                  'Total',
+                  '',
+                  '',
+                  details.totalHours,
+                  '',
+                  details.cost,
+                  details.price,
+                  details.profit,
+                  csvPercent(details.margin),
+                ],
+              ]}
+            />
+          </CardAction>
+        )}
       </CardHeader>
       <CardContent>
         {employees.length === 0 ? (

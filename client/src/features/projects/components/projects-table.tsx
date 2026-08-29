@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
 
+import { ExportCsvButton } from '@/components/export-csv-button'
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -21,6 +23,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { csvPercent } from '@/lib/csv'
 import { formatAED, formatHours, formatPercent } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
@@ -33,11 +36,35 @@ export function ProjectsTable() {
   return (
     <Card size="sm" className="gap-3">
       <CardHeader>
-        <CardDescription>
-          Full project lifetime — price against every hour ever logged, so
-          period filters elsewhere don't apply here. Click a row for the full
-          picture.
-        </CardDescription>
+        {data && data.length > 0 && (
+          <CardAction>
+            <ExportCsvButton
+              filename="projects"
+              headers={[
+                'Ref Code',
+                'Project',
+                'Status',
+                'Hours',
+                'Price (AED)',
+                'Cost (AED)',
+                'Profit (AED)',
+                'Margin %',
+              ]}
+              getRows={() =>
+                data.map((project) => [
+                  project.refCode,
+                  project.name,
+                  project.status,
+                  project.hours,
+                  project.revenue,
+                  project.cost,
+                  project.profit,
+                  csvPercent(project.margin),
+                ])
+              }
+            />
+          </CardAction>
+        )}
       </CardHeader>
       <CardContent>
         {isPending && (

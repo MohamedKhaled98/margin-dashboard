@@ -1,5 +1,7 @@
+import { ExportCsvButton } from '@/components/export-csv-button'
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -12,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { csvPercent } from '@/lib/csv'
 import { formatHours, formatPercent } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
@@ -29,6 +32,23 @@ export function CategoriesTable({ categories }: CategoriesTableProps) {
           Every hour logged in this period, split by category. Which categories
           count as billable is configurable in Settings.
         </CardDescription>
+        {categories.length > 0 && (
+          <CardAction>
+            <ExportCsvButton
+              filename="categories"
+              headers={['Category', 'Type', 'People', 'Hours', 'Share %']}
+              getRows={() =>
+                categories.map((category) => [
+                  category.category,
+                  category.billable ? 'Billable' : 'Internal',
+                  category.employeeCount,
+                  category.hours,
+                  csvPercent(category.share),
+                ])
+              }
+            />
+          </CardAction>
+        )}
       </CardHeader>
       <CardContent>
         <Table>

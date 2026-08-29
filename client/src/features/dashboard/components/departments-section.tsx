@@ -2,7 +2,14 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { TriangleAlert } from 'lucide-react'
 
-import { Card, CardContent } from '@/components/ui/card'
+import { ExportCsvButton } from '@/components/export-csv-button'
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+} from '@/components/ui/card'
 import {
   Sheet,
   SheetContent,
@@ -36,8 +43,34 @@ export function DepartmentsSection({ year, month }: DepartmentsSectionProps) {
 
   const [selected, setSelected] = useState<DepartmentBreakdown | null>(null)
 
+  const periodSlug = month
+    ? `${year}-${String(month).padStart(2, '0')}`
+    : String(year)
+
   return (
     <Card size="sm" className="gap-3">
+      <CardHeader>
+        <CardDescription>
+          Logged hours and cost per department in this period. Click a row for
+          the people behind it.
+        </CardDescription>
+        {data && data.departments.length > 0 && (
+          <CardAction>
+            <ExportCsvButton
+              filename={`departments-${periodSlug}`}
+              headers={['Department', 'People', 'Hours', 'Cost (AED)']}
+              getRows={() =>
+                data.departments.map((department) => [
+                  department.department,
+                  department.employeeCount,
+                  department.totalHours,
+                  department.cost,
+                ])
+              }
+            />
+          </CardAction>
+        )}
+      </CardHeader>
       <CardContent>
         {isPending && (
           <div className="space-y-2">
@@ -107,7 +140,34 @@ export function DepartmentsSection({ year, month }: DepartmentsSectionProps) {
           {selected && (
             <SheetContent>
               <SheetHeader>
-                <SheetTitle>{selected.department ?? 'No department'}</SheetTitle>
+                <div className="flex items-center justify-between gap-2 pr-8">
+                  <SheetTitle>
+                    {selected.department ?? 'No department'}
+                  </SheetTitle>
+                  <ExportCsvButton
+                    filename={`department-${(selected.department ?? 'none')
+                      .toLowerCase()
+                      .replaceAll(/\s+/g, '-')}-${periodSlug}`}
+                    headers={[
+                      'Employee No',
+                      'Person',
+                      'Designation',
+                      'Hours',
+                      'Cost (AED)',
+                      'Missing Salary',
+                    ]}
+                    getRows={() =>
+                      selected.employees.map((employee) => [
+                        employee.employeeNo,
+                        employee.employeeName,
+                        employee.designation,
+                        employee.totalHours,
+                        employee.cost,
+                        employee.missingSalary ? 'yes' : '',
+                      ])
+                    }
+                  />
+                </div>
                 <SheetDescription>
                   {year} · {month ? monthName(month) : 'Full year'} —{' '}
                   {formatHours(selected.totalHours)} logged,{' '}
