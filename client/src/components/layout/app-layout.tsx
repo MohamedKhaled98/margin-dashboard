@@ -2,6 +2,7 @@ import { NavLink, Outlet } from 'react-router'
 import {
   ChartNoAxesColumn,
   ChartPie,
+  FolderKanban,
   LayoutDashboard,
   Percent,
   Settings,
@@ -12,6 +13,7 @@ import { cn } from '@/lib/utils'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/projects', label: 'Projects', icon: FolderKanban },
   { to: '/productivity', label: 'Productivity', icon: ChartNoAxesColumn },
   { to: '/categories', label: 'Categories', icon: ChartPie },
   { to: '/imports', label: 'Imports', icon: Upload },

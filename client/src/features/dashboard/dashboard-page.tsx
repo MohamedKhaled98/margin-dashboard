@@ -7,8 +7,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import { monthName } from '@/lib/format'
 
 import { WarningsSection } from '@/components/warnings-section'
-import { ProjectsTable } from '@/features/projects/components/projects-table'
 
+import { DepartmentsSection } from './components/departments-section'
 import { PeriodFilter } from './components/period-filter'
 import {
   StatTileGrid,
@@ -86,9 +86,9 @@ export function DashboardPage() {
 
           <section className="space-y-3">
             <h2 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-              Projects
+              Departments
             </h2>
-            <ProjectsTable />
+            <DepartmentsSection year={year} month={month} />
           </section>
 
           <section className="space-y-3">

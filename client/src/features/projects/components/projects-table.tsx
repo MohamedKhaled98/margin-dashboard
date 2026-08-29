@@ -34,8 +34,8 @@ export function ProjectsTable() {
     <Card size="sm" className="gap-3">
       <CardHeader>
         <CardDescription>
-          Full project lifetime — price against every hour ever logged, so this
-          table is not affected by the period filter. Click a row for the full
+          Full project lifetime — price against every hour ever logged, so
+          period filters elsewhere don't apply here. Click a row for the full
           picture.
         </CardDescription>
       </CardHeader>
