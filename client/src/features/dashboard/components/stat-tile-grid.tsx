@@ -1,7 +1,7 @@
 import type { DashboardStats } from '@/api/types'
 import { formatAED, formatHours, formatPercent } from '@/lib/format'
 
-import { StatTile, StatTileSkeleton, type StatTileProps } from './stat-tile'
+import { StatTile, StatTileSkeleton, type StatTileProps } from '@/components/stat-tile'
 
 function signTone(value: number): StatTileProps['tone'] {
   if (value > 0) return 'positive'

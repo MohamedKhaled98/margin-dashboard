@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useNavigate } from 'react-router'
 
 import {
   Card,
@@ -27,13 +28,15 @@ import { projectsListQuery } from '../queries'
 
 export function ProjectsTable() {
   const { data, isPending, isError, error } = useQuery(projectsListQuery())
+  const navigate = useNavigate()
 
   return (
     <Card size="sm" className="gap-3">
       <CardHeader>
         <CardDescription>
           Full project lifetime — price against every hour ever logged, so this
-          table is not affected by the period filter.
+          table is not affected by the period filter. Click a row for the full
+          picture.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -74,7 +77,19 @@ export function ProjectsTable() {
             </TableHeader>
             <TableBody>
               {data.map((project) => (
-                <TableRow key={project.refCode}>
+                <TableRow
+                  key={project.refCode}
+                  tabIndex={0}
+                  className="cursor-pointer focus-visible:bg-muted/50 focus-visible:outline-none"
+                  onClick={() =>
+                    navigate(`/projects/${encodeURIComponent(project.refCode)}`)
+                  }
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      navigate(`/projects/${encodeURIComponent(project.refCode)}`)
+                    }
+                  }}
+                >
                   <TableCell>
                     <Tooltip>
                       <TooltipTrigger

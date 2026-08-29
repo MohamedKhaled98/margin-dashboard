@@ -34,6 +34,55 @@ export type ProjectSummary = {
   margin: number | null
 }
 
+// Mirrors app/server/services/project/
+
+export type ProjectEmployeeContribution = {
+  employeeNo: string
+  employeeName: string
+  department: string | null
+  designation: string | null
+  hours: number
+  hoursShare: number
+  cost: number
+  // All null when the project has no price row.
+  revenueShare: number | null
+  profit: number | null
+  profitability: number | null
+  missingSalary: boolean
+}
+
+export type ProjectDepartmentBreakdown = {
+  department: string | null
+  hours: number
+  hoursShare: number
+  cost: number
+}
+
+export type ProjectMonthBreakdown = {
+  year: number
+  month: number
+  hours: number
+  cost: number
+}
+
+export type ProjectDetails = {
+  refCode: string
+  name: string
+  category: string | null
+  status: string | null
+  price: number | null
+  salesYear: number | null
+  salesMonth: number | null
+  totalHours: number
+  cost: number
+  profit: number | null
+  margin: number | null
+  employees: ProjectEmployeeContribution[]
+  departments: ProjectDepartmentBreakdown[]
+  months: ProjectMonthBreakdown[]
+  warnings: DashboardWarning[]
+}
+
 export type DashboardStats = {
   period: { year: number; month: number | null }
   totalHours: number

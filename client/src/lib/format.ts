@@ -41,3 +41,7 @@ export const MONTHS = [
 export function monthName(month: number): string {
   return MONTHS[month - 1]?.label ?? String(month)
 }
+
+export function formatMonthYear(year: number, month: number): string {
+  return `${monthName(month).slice(0, 3)} ${year}`
+}

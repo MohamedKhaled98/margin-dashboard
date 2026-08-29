@@ -6,13 +6,14 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { monthName } from '@/lib/format'
 
+import { WarningsSection } from '@/components/warnings-section'
+import { ProjectsTable } from '@/features/projects/components/projects-table'
+
 import { PeriodFilter } from './components/period-filter'
-import { ProjectsTable } from './components/projects-table'
 import {
   StatTileGrid,
   StatTileGridSkeleton,
 } from './components/stat-tile-grid'
-import { WarningsSection } from './components/warnings-section'
 import { dashboardStatsQuery } from './queries'
 import { usePeriodParams } from './use-period-params'
 
@@ -65,6 +66,7 @@ export function DashboardPage() {
             <Button
               variant="outline"
               size="sm"
+              nativeButton={false}
               render={<Link to="/imports" />}
             >
               Import data
